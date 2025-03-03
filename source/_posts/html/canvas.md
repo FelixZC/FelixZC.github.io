@@ -6,10 +6,35 @@ cover: /assets/images/jpg/145.jpg
 categories: [html]
 tags: [Canvas]
 ---
-
 ## 来源
 
 笔记来源：[PixiJs学前篇（一）：Canvas基础【绘制篇】🔥🔥面对网页性能要求越来越高的今天，项目性能优化已经成了项目开发 - 掘金 (juejin.cn)](https://juejin.cn/post/7161696893695688740?searchId=202502271231541CC85DB1CD50F5A46993)
+
+## 介绍
+Canvas是HTML5中的一个非常重要的元素，它允许通过JavaScript在网页上直接绘制图形和动画。Canvas提供了一个可以通过像素处理图像的空白画布，开发者可以在上面绘制各种图形、文本以及实现复杂动画效果。
+
+### 主要用途：
+- **绘图**：可以用来绘制线条、矩形、圆形、弧线等基本形状，也可以加载并操作图像。
+- **游戏开发**：由于其高效的绘图能力，Canvas常被用于开发2D游戏。
+- **数据可视化**：通过绘制图表、仪表盘等来展示数据信息。
+- **动画制作**：支持创建流畅的动画效果，适用于交互式应用或网站。
+
+### 使用方法：
+开始使用Canvas，首先需要在HTML中添加`<canvas>`标签，并为其指定宽度和高度。例如：
+```html
+<canvas id="myCanvas" width="500" height="400"></canvas>
+```
+然后，通过JavaScript获取Canvas上下文对象（通常是2D绘图环境），就可以在Canvas上进行绘图了：
+```javascript
+var canvas = document.getElementById('myCanvas');
+var ctx = canvas.getContext('2d'); // 获取2D绘图环境
+
+// 示例：在Canvas上绘制一个矩形
+ctx.fillStyle = 'green'; // 设置填充颜色
+ctx.fillRect(10, 10, 150, 100); // 绘制填充矩形
+```
+
+Canvas的强大之处在于它的灵活性和高性能，使开发者能够创造出丰富多样的视觉效果。不过，需要注意的是，Canvas只支持光栅图形（即位图），不支持矢量图形。对于复杂的图形和动画，可能需要考虑结合其他技术如SVG一起使用。
 
 ## 上下文
 
