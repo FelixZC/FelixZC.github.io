@@ -8,7 +8,11 @@ tags: [webgl,canvas]
 ---
 ## 来源
 
-笔记来源：[《从Canvas到PixiJs》专栏简介🔥🔥面对网页性能要求越来越高的今天，项目性能优化已经成了项目开发中必不可少的 - 掘金 (juejin.cn)](https://juejin.cn/post/7161696291469131806)
+笔记来源：
+
+[《从Canvas到PixiJs》专栏简介🔥🔥面对网页性能要求越来越高的今天，项目性能优化已经成了项目开发中必不可少的 - 掘金 (juejin.cn)](https://juejin.cn/post/7161696291469131806)
+
+[欢迎 | PixiJS 中文网 (nodejs.cn)](https://pixi.nodejs.cn/8.x/guides)
 
 ## 介绍
 
@@ -101,18 +105,81 @@ PixiJS 广泛应用于网页游戏、广告、教育软件以及任何需要高�
       });
 ```
 
-## position （位置）
+## 加载资源到舞台
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <script src="https://pixijs.download/release/pixi.js"></script>
-    <title>PixiJs</title>
-  </head>
-  <body>
-    <script>
-      // 创建一个新的 PIXI.Application 实例
+```js
+import { Application, Assets, Sprite } from 'pixi.js';
+
+// Create a new application
+const app = new Application();
+
+// Initialize the application
+await app.init({ background: '#1099bb', resizeTo: window });
+
+// Append the application canvas to the document body
+document.body.appendChild(app.canvas);
+
+// Start loading right away and create a promise
+const texturePromise = Assets.load('https://pixi.nodejs.cn/assets/bunny.png');
+
+// When the promise resolves, we have the texture!
+texturePromise.then((resolvedTexture) =>
+{
+    // create a new Sprite from the resolved loaded Texture
+    const bunny = Sprite.from(resolvedTexture);
+
+    // center the sprite's anchor point
+    bunny.anchor.set(0.5);
+
+    // move the sprite to the center of the screen
+    bunny.x = app.screen.width / 2;
+    bunny.y = app.screen.height / 2;
+
+    app.stage.addChild(bunny);
+});
+```
+
+### **Assets**a开箱即用，可以加载以下资源类型，无需外部插件：
+
+- 纹理（`avif`、`webp`、`png`、`jpg`、`gif`）
+- 精灵表 (`json`)
+- 位图字体（`xml`、`fnt`、`txt`）
+- 网页字体（`ttf`、`woff`、`woff2`）
+- Web fonts (`ttf`, `woff`, `woff2`)
+- Json 文件 (`json`)
+- 文本文件 (`txt`)
+
+### **可取别名，多资源读取**
+
+```js
+Assets.add({ alias: 'flowerTop', src: 'https://pixi.nodejs.cn/assets/flowerTop.png' });
+Assets.add({ alias: 'eggHead', src: 'https://pixi.nodejs.cn/assets/eggHead.png' });
+const texturesPromise = Assets.load(['flowerTop', 'eggHead']); // => Promise<{flowerTop: Texture, eggHead: Texture}>
+
+```
+
+## 容器
+
+[容器](https://pixijs.download/release/docs/scene.Container.html) 类提供了一个简单的显示对象，其功能正如其名称所暗示的那样 - 将一组子对象收集在一起。
+
+### 常用属性
+
+| 属性           | 描述                                                         |
+| -------------- | ------------------------------------------------------------ |
+| **position**   | X 和 Y 位置以像素为单位给出，并更改对象相对于其父对象的位置，也可以直接用作 `object.x` / `object.y` |
+| **rotation**   | 旋转以弧度指定，并顺时针旋转对象 (0.0 - 2 * Math.PI)         |
+| **angle**      | 角度是旋转的别名，以度而不是弧度指定 (0.0 - 360.0)           |
+| **pivot**      | 对象旋转的点（以像素为单位） - 还设置子对象的原点            |
+| **alpha**      | 不透明度从 0.0（完全透明）到 1.0（完全不透明），由子级继承   |
+| **scale**      | 比例指定为百分比，1.0 为 100% 或实际大小，并且可以为 x 和 y 轴独立设置 |
+| **skew**       | Skew 与 CSS skew() 函数类似，在 x 和 y 方向上变换对象，并以弧度指定 |
+| **visible**    | 对象是否可见，作为布尔值 - 防止更新和渲染对象和子对象        |
+| **renderable** | 是否应该渲染对象 - 当 `false` 时，对象仍然会更新，但不会渲染，不影响子对象 |
+
+#### position （位置）
+
+```js
+ // 创建一个新的 PIXI.Application 实例
       let app = new PIXI.Application({ width: 640, height: 360, backgroundColor: 0x1099bb });
       // 将实例添加到 DOM 中
       document.body.appendChild(app.view);
@@ -125,18 +192,15 @@ PixiJS 广泛应用于网页游戏、广告、教育软件以及任何需要高�
       luFei.position.set(app.screen.width/2, app.screen.height/2); 
       // 把图像精灵添加到舞台（app）上
       app.stage.addChild(luFei);
-    </script>
-  </body>
-</html>
 ```
 
-## pivot （枢轴、中心点）
+#### pivot （枢轴、中心点）
 
 把枢轴设置在精灵X和Y分别在100的位置      
 
 luFei.pivot.set(100, 100);
 
-##  anchor （描点）
+####  anchor （描点）
 
  anchor可以移动精灵图的纹理原点，通过设置0-1的值。pivot通过设置像素值来改变精灵的x和y的原点值。
 
@@ -150,7 +214,7 @@ anchor 和 pivot很相似，都可以设置精灵的焦点。但他们也是有�
 
 pivot 是基于 anchor 来设置的，当 anchor 为默认值（0, 0）的时候，pivot 设置多少就是多少，但当 anchor 设置以后，pivot的值就要基于anchor后的焦点来设置。
 
-## scale （缩放）
+#### scale （缩放）
 
 设置的时候值为0-1，1即为100%（实际大小）
 
@@ -160,21 +224,18 @@ luFei.scale.x = 0.5; // x坐标缩小一半
 luFei.scale.y = 1; // y坐标保持实际大小
 // 统一设置
 luFei.scale.set(0.5， 1);
-
 // 若X和Y的值相同,比如都为0.5
 luFei.position.set(0.5);
 ```
 
-## rotation （旋转）
+#### rotation （旋转）
 
 ```js
-
       // 通过 rotation 设置精灵的旋转角度
       luFei.rotation = 0.5 * Math.PI //90度
-
 ```
 
-## angle （角度）
+#### angle （角度）
 
 angle 和 rotation 具有相同的效果。不同点是 rotation 以弧度为单位，angle 以度为单位。
 
@@ -183,31 +244,28 @@ angle 和 rotation 具有相同的效果。不同点是 rotation 以弧度为单
       luFei.angle = 45
 ```
 
-## skew （偏斜）
+#### skew （偏斜）
 
 ```js
  // 通过 skew 设置精灵的偏斜
  luFei.skew.set(0.5, 0) // x轴倾斜0.5
-
 ```
 
-## alpha （透明度）
+#### alpha （透明度）
 
 ```js
-      
       // 通过 alpha 设置精灵的透明度 0-1(透明到不透明）
       luFei.alpha = 0.5
 ```
 
-## visible (可见否）
+#### visible (可见否）
 
 ```js
-
-      // 通过 visible 设置精灵的可见度
+	  // 通过 visible 设置精灵的可见度
       luFei.visible = false
 ```
 
-## renderable （渲染）
+#### renderable （渲染）
 
 renderable 和 visible 显示的效果一样，但不一样的是，visible 会渲染到画布，renderable 不会渲染到画布上。
 
@@ -216,20 +274,12 @@ renderable 和 visible 显示的效果一样，但不一样的是，visible 会�
       luFei.renderable = false
 ```
 
-## mask（掩模）
+#### mask（掩模）
 
 掩模是一个物体，能将精灵的可见性限制于掩模的形状。 举个例子看一下就懂了，首先咱们再添加一个圆（图形精灵）到画布上。
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <script src="https://pixijs.download/release/pixi.js"></script>
-    <title>PixiJs</title>
-  </head>
-  <body>
-    <script>
-      // 创建一个新的 PIXI.Application 实例
+```js
+// 创建一个新的 PIXI.Application 实例
       let app = new PIXI.Application({ width: 640, height: 360, backgroundColor: 0x1099bb });
       // 将实例添加到 DOM 中
       document.body.appendChild(app.view);
@@ -243,7 +293,6 @@ renderable 和 visible 显示的效果一样，但不一样的是，visible 会�
       luFei.scale.set(0.5);
       // 把图像精灵添加到舞台（app）上
       app.stage.addChild(luFei);
-      
       // 创建一个图形类
       const graphics = new PIXI.Graphics();
       // 指定一个简单的单色填充
@@ -258,27 +307,15 @@ renderable 和 visible 显示的效果一样，但不一样的是，visible 会�
 
       // 把圆形精灵以掩模的形式添加在图片精灵上
       luFei.mask = graphics
-    </script>
-  </body>
-</html>
-
 ```
 
-## zIndex (图层层级)
+#### zIndex (图层层级)
 
 和 CSS 里的 z-index 一样，zIndex 的值越大，层级就越高。
 父精灵设置了sortableChildren为true, 子精灵才能按照zIndex的value值进行层级的排序。
 
-```html 
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <script src="https://pixijs.download/release/pixi.js"></script>
-    <title>PixiJs</title>
-  </head>
-  <body>
-    <script>
-      // 创建一个新的 PIXI.Application 实例
+```js
+// 创建一个新的 PIXI.Application 实例
       let app = new PIXI.Application({ 
         width: 640, 
         height: 360, 
@@ -323,11 +360,22 @@ renderable 和 visible 显示的效果一样，但不一样的是，visible 会�
       app.stage.addChild(luFei);
       app.stage.addChild(luFei1);
       app.stage.addChild(luFei2);
-      
-    </script>
-  </body>
-</html>
 ```
+
+
+
+#### 过滤器
+
+容器对象的另一个常见用途是作为过滤内容的宿主。
+
+| AlphaFilter        | 与设置 `alpha` 属性类似，但展平 Container 而不是单独应用于子项。 |
+| ------------------ | ------------------------------------------------------------ |
+| BlurFilter         | 应用模糊效果                                                 |
+| ColorMatrixFilter  | 颜色矩阵是应用更复杂的色调或颜色变换（例如棕褐色调）的灵活方法。 |
+| DisplacementFilter | 置换贴图创建视觉偏移像素，例如创建波浪水效果。               |
+| NoiseFilter        | 创建随机噪声（例如颗粒效果）。                               |
+
+底层原理glsl和wgsl
 
 ## interactive（事件交互）
 
@@ -342,21 +390,6 @@ renderable 和 visible 显示的效果一样，但不一样的是，visible 会�
         console.log('luFei click') 
       })
 ```
-
-## buttonMode（指定为按钮模式）
-
-元素开启事件交互模式以后，鼠标悬停时还是指针的样式。当 buttonMode 设置为 true 以后，鼠标光标会被更改为手指。
-
-```js
-      // 开启事件交互
-      luFei.interactive = true;
-      // 开启按钮模式
-      luFei.buttonMode = true;
-```
-
-## cursor (光标）
-
-cursor 和 buttonMode 一样可以设置鼠标的光标模式，但不同的是cursor能设置很多不同的模式
 
 ## hitArea (命中区域）
 
@@ -378,23 +411,18 @@ cursor 和 buttonMode 一样可以设置鼠标的光标模式，但不同的是c
       })
 ```
 
-## parent (父元素）
+## pixelLine
 
-```js
-      // 开启事件交互
-      luFei.interactive = true;
-      // 开启按钮模式
-      luFei.buttonMode = true;
+`pixelLine` 属性是 PixiJS 图形 API 的一个巧妙功能，允许你创建保持 1 像素粗细的线条，无论缩放或缩放级别如何。作为图形 API 的一部分，它为开发者提供了 PixiJS 为构建和描边形状提供的所有功能。
 
-      // 给图像精灵添加点击事件，
-      luFei.addListener('click', () => {
-        console.log("🚀 ~ file: luFei.parent", luFei.parent)
-      })
-```
+// Create a Graphics object and draw a pixel-perfect line
+let graphics = new Graphics()
+  .moveTo(0, 0)
+  .lineTo(100, 100)
+  .stroke({ color: 0xff0000, pixelLine: true });
 
-## x, y (x轴和y轴的值）
+// Add it to the stage
+app.stage.addChild(graphics);
 
-精灵相对于父元素的坐标
-
-​     // 设置x和y轴的值      luFei.x = 200;      luFei.y = 100; 
-
+// Even if we scale the Graphics object, the line remains 1 pixel wide
+graphics.scale.set(2);
